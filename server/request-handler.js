@@ -52,29 +52,37 @@ var requestHandler = function(request, response) {
   //   roomname: app.roomname
   // }
 
+
   if (request.method === 'POST'){
+    var body = '';
+
     request.on('data', function(data){
+      body += data;
+    });
+
+    request.on('end', function(){
       var timestamp = new Date();
-      var message = JSON.parse(data);
+      var message = JSON.parse(body);
+      console.log('end', message)
       storedMessages.push({
+        'objectId': storedMessages.length,
         'createdAt': timestamp,
         'username': message.username,
         'text': message.text,
         'roomname': message.roomname
-      } );
-    });
-    request.on('end', function(){
-      console.log(storedMessages);
+      });
+      response.end();
     });
   }
 
   if (request.method === 'GET') {
-    request.on('end', function(data){
-      response.write(JSON.stringify({results: storedMessages}))
-    })
+    // request.on('end', function(data){
+      // response.write(JSON.stringify({results: storedMessages}))
+    // })
+    response.end( JSON.stringify({results: storedMessages}) );
   }
 
-  var test = JSON.stringify({hey: 5000, results: []});
+  // var test = JSON.stringify({hey: 5000, results: []});
   // console.log(test)
   // response.write(test);
 
@@ -85,7 +93,7 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end( JSON.stringify({results: storedMessages}) );
+  else { response.end(); }
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).

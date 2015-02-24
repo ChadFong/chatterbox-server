@@ -53,6 +53,7 @@ $(function() {
         error: function (data) {
           console.error('chatterbox: Failed to send message');
           console.log(data);
+          app.fetch();
         }
       });
     },
