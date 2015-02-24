@@ -62,7 +62,7 @@ $(function() {
         url: app.server,
         type: 'GET',
         contentType: 'application/json',
-        data: { order: '-createdAt'},
+        // data: { order: '-createdAt'},
         success: function(data) {
           console.log('chatterbox: Messages fetched: ', data);
 

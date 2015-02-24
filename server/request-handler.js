@@ -13,45 +13,11 @@ this file and include it in basic-server.js so that it actually works.
 **************************************************************/
 
 var requestHandler = function(request, response) {
-  // Request and Response come from node's http module.
-  //
-  // They include information about both the incoming request, such as
-  // headers and URL, and about the outgoing response, such as its status
-  // and content.
-  //
-  // Documentation for both request and response can be found in the HTTP section at
-  // http://nodejs.org/documentation/api/
-
-  // Do some basic logging.
-  //
-  // Adding more logging to your server can be an easy way to get passive
-  // debugging help, but you should always be careful about leaving stray
-  // console.logs in your code.
   console.log("Serving request type " + request.method + " for url " + request.url);
-
-  // The outgoing status.
   var statusCode = 200;
-
-  // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
-  // console.log(request);
 
-  // Tell the client we are sending them plain text.
-  //
-  // You will need to change this if you are sending something
-  // other than plain text, like JSON or HTML.
   headers['Content-Type'] = "application/json";
-
-  // .writeHead() writes to the request line and headers of the response,
-  // which includes the status and all headers.
-  response.writeHead(statusCode, headers);
-
-  // {
-  //   username: app.username,
-  //   text: app.$message.val(),
-  //   roomname: app.roomname
-  // }
-
 
   if (request.method === 'POST'){
     var body = '';
@@ -63,7 +29,6 @@ var requestHandler = function(request, response) {
     request.on('end', function(){
       var timestamp = new Date();
       var message = JSON.parse(body);
-      console.log('end', message)
       storedMessages.push({
         'objectId': storedMessages.length,
         'createdAt': timestamp,
@@ -71,29 +36,23 @@ var requestHandler = function(request, response) {
         'text': message.text,
         'roomname': message.roomname
       });
+      response.writeHead(201, headers);
       response.end();
     });
   }
 
-  if (request.method === 'GET') {
-    // request.on('end', function(data){
-      // response.write(JSON.stringify({results: storedMessages}))
-    // })
+  else if (request.method === 'GET') {
+    if ( request.url === '/arglebargle') {
+      statusCode = 404;
+    }
+    response.writeHead(statusCode, headers);
     response.end( JSON.stringify({results: storedMessages}) );
   }
 
-  // var test = JSON.stringify({hey: 5000, results: []});
-  // console.log(test)
-  // response.write(test);
-
-  // Make sure to always call response.end() - Node may not send
-  // anything back to the client until you do. The string you pass to
-  // response.end() will be the body of the response - i.e. what shows
-  // up in the browser.
-  //
-  // Calling .end "flushes" the response's internal buffer, forcing
-  // node to actually send all the data over to the client.
-  else { response.end(); }
+  else {
+    response.writeHead(statusCode, headers);
+    response.end();
+  }
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
