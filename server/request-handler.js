@@ -34,7 +34,7 @@ var requestHandler = function(request, response) {
 
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
-  console.log(request.headers);
+  // console.log(request);
 
   // Tell the client we are sending them plain text.
   //
@@ -45,6 +45,34 @@ var requestHandler = function(request, response) {
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
   response.writeHead(statusCode, headers);
+
+  // {
+  //   username: app.username,
+  //   text: app.$message.val(),
+  //   roomname: app.roomname
+  // }
+
+  if (request.method === 'POST'){
+    request.on('data', function(data){
+      var timestamp = new Date();
+      var message = JSON.parse(data);
+      storedMessages.push({
+        'createdAt': timestamp,
+        'username': message.username,
+        'text': message.text,
+        'roomname': message.roomname
+      } );
+    });
+    request.on('end', function(){
+      console.log(storedMessages);
+    });
+  }
+
+  if (request.method === 'GET') {
+    request.on('end', function(data){
+      response.write(JSON.stringify({results: storedMessages}))
+    })
+  }
 
   var test = JSON.stringify({hey: 5000, results: []});
   // console.log(test)
@@ -57,7 +85,7 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end(test);
+  response.end( JSON.stringify({results: storedMessages}) );
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
@@ -75,5 +103,7 @@ var defaultCorsHeaders = {
   "access-control-allow-headers": "content-type, accept",
   "access-control-max-age": 10 // Seconds.
 };
+
+var storedMessages = [];
 
 exports.requestHandler = requestHandler;
